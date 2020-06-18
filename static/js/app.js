@@ -10,11 +10,16 @@ function init()
             var names = data.names;
             var samples = data.samples;
 
+            //do the thing... passing around required data from dataset
             populateDropdown(names);
-            initTable(samples);
-            initBubble(samples);
-            populateDemographics(metadata,940);
-            initGauge(metadata, 940);
+
+            //nabbing default id and populating tables with it
+            var defaultID = d3.select('#selDataset').property('value');
+            
+            initTable(samples, defaultID);
+            initBubble(samples, defaultID);
+            populateDemographics(metadata,parseInt(defaultID));
+            initGauge(metadata, parseInt(defaultID));
         }
     );
 }
@@ -33,9 +38,9 @@ function addSelect(name, dropdown)
     select.property("value", name);
 }
 
-function initTable(samples)
+function initTable(samples, defaultID)
 {
-    var sample = getSample(samples, "940");
+    var sample = getSample(samples, defaultID);
     var sample = trimSample(sample);
 
     sample.otu_ids = sample.otu_ids.map(id => `OTU ` + id);
@@ -45,7 +50,7 @@ function initTable(samples)
         y: sample.otu_ids,
         x: sample.sample_values,
         text: sample.otu_labels,
-        name: `BB_940`,
+        name: `BB_${defaultID}`,
         type: "bar",
         orientation: "h"
     };
@@ -55,9 +60,9 @@ function initTable(samples)
     Plotly.plot("bar", data);
 }
 
-function initBubble(samples)
+function initBubble(samples, defaultID)
 {
-    var sample = getSample(samples,"940");
+    var sample = getSample(samples, defaultID);
 
     var trace = {
         x: sample.otu_ids,
@@ -121,6 +126,7 @@ function optionChanged(value)
         var trimmedSample = trimSample(sample);
         trimmedSample.otu_ids = trimmedSample.otu_ids.map(id => `OTU ` + id);
 
+        //update our stuff with our new sample
         Plotly.restyle("bar", 'x', [trimmedSample.sample_values]);
         Plotly.restyle("bar", 'y', [trimmedSample.otu_ids]);
         Plotly.restyle("bar", 'text', [trimmedSample.otu_labels]);
